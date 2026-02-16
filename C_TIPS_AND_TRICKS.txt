@@ -1,0 +1,811 @@
+                      ,=================,
+                      | C TIPS & TRICKS |
+                      '================='
+
+************************************************************************
+
+Topics
+======
+
+Reformat, compile, and run a single "main.c" with valgrind
+Down looping until zero with size_t
+Parsing a double in a string
+Search for a character ch in a string and remove all or only the first
+Remove the last UTF-8 character in a C string
+UTF-8 strlen (counts Unicode characters)
+Read line from a file without knowing the line length with "getline"
+Removing trailing newline character from a string
+Split a string at <TAB>
+An alternative to "strdup"
+An alternative to "getline"
+Matrix vs. vector, and passing to funtions
+A pointer to a 2D array of int with dimensions [n][n]
+Deciphering C declarations
+
+************************************************************************
+
+Reformat, compile, and run a single "main.c" with valgrind
+==========================================================
+
+#!/bin/bash
+cd `dirname $0`
+echo MAKE .....................
+clang-format --style=Chromium -i main.c
+rm main
+cc -Wall -Wextra -O1 -g -o main main.c
+echo RUN ......................
+valgrind --leak-check=full --show-error-list=yes ./main
+echo ..........................
+echo waiting
+read X
+
+************************************************************************
+
+Down looping until zero with size_t
+===================================
+
+for (size_t i = n; i >= 0; i--) { ... }
+behaves like:
+- i counts down to 0
+- i-- when i == 0 wraps around to SIZE_MAX
+- Infinite loop (undefined behavior may follow)
+  
+SOLUTION:
+for (size_t i = n; i-- > 0; ) { ... }
+
+************************************************************************
+
+Parsing a double in a string
+============================
+
+Use strtod (recommended):
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(void) {
+    const char *s = "123.45abc";
+    char *end;
+
+    double value = strtod(s, &end);
+
+    if (s == end) {
+        // No conversion was performed
+        printf("No number found\n");
+    } else {
+        printf("Parsed value: %f\n", value);
+        printf("Parsing stopped at: \"%s\"\n", end);
+        printf("Characters consumed: %ld\n", end - s);
+    }
+    return 0;
+}
+
+Output
+Parsed value: 123.450000
+Parsing stopped at: "abc"
+Characters consumed: 6
+
+How strtod works
+double strtod(const char *nptr, char **endptr);
+
+nptr → input string
+endptr → points to the first character not used
+Returns the parsed double
+Skips leading whitespace automatically
+
+Key checks
+Condition        .... Meaning
+endptr == nptr   .... No valid number found
+*endptr == '\0'  .... Entire string was parsed
+errno == ERANGE  .... Overflow or underflow
+    
+Handling errors properly:
+
+#include <errno.h>
+#include <math.h>
+
+errno = 0;
+char *end;
+double v = strtod(s, &end);
+
+if (s == end) {
+    // Not a number
+}
+else if (errno == ERANGE) {
+    // Out of range
+}
+
+************************************************************************
+
+Search for a character ch in a string and remove all or only the first
+======================================================================
+
+Remove all occurrences:
+
+#include <stdio.h>
+
+void removeChar(char *str, char ch) {
+    int i, j = 0;
+    for (i = 0; str[i] != '\0'; i++) {
+        if (str[i] != ch) {
+            str[j++] = str[i];
+        }
+    }
+    str[j] = '\0';  // terminate string
+}
+
+int main() {
+    char str[] = "123435";
+    removeChar(str, '3');
+    printf("%s\n", str);  // Output: 1245
+    return 0;
+}
+
+Remove only the first occurrence:
+
+#include <stdio.h>
+#include <string.h>
+
+void removeFirstChar(char *str, char ch) {
+    char *pos = strchr(str, ch);
+    if (pos) {
+        memmove(pos, pos + 1, strlen(pos));
+    }
+}
+
+int main() {
+    char str[] = "1234";
+    removeFirstChar(str, '3');
+    printf("%s\n", str);  // Output: 124
+    return 0;
+}
+
+************************************************************************
+
+Remove the last UTF-8 character in a C string
+=============================================
+
+#include <string.h>
+
+void remove_last_utf8_char(char *str) {
+    if (!str || *str == '\0')
+        return;
+
+    char *p = str + strlen(str) - 1;
+
+    // Move backward while we're on a UTF-8 continuation byte (10xxxxxx)
+    while (p > str && ((*p & 0xC0) == 0x80)) {
+        p--;
+    }
+
+    // Truncate string at start of last UTF-8 character
+    *p = '\0';
+}
+
+How it works:
+- UTF-8 continuation bytes have the form 10xxxxxx
+- The start byte of a UTF-8 character does not match that pattern
+- We walk backward until we find the start byte, then terminate the 
+  string there
+
+Example:
+
+#include <stdio.h>
+
+int main(void) {
+    char s[] = "Héllo🌍";
+
+    remove_last_utf8_char(s);
+    printf("%s\n", s);  // Output: Héllo
+
+    remove_last_utf8_char(s);
+    printf("%s\n", s);  // Output: Héll
+
+    return 0;
+}
+
+************************************************************************
+
+UTF-8 strlen (counts Unicode characters)
+========================================
+
+#include <stddef.h>
+
+size_t utf8_strlen(const char *s) {
+    size_t len = 0;
+
+    while (*s) {
+        // Count bytes that are NOT UTF-8 continuation bytes (10xxxxxx)
+        if ((*s & 0xC0) != 0x80) {
+            len++;
+        }
+        s++;
+    }
+
+    return len;
+}
+
+Why this works
+- UTF-8 continuation bytes always start with 10xxxxxx
+- The first byte of a UTF-8 character does not
+- Counting only non-continuation bytes counts characters correctly
+
+Example:
+
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    const char *s = "Héllo 🌍";
+
+    printf("bytes: %zu\n", strlen(s));        // bytes
+    printf("chars: %zu\n", utf8_strlen(s));   // characters
+
+    return 0;
+}
+
+Output:
+
+bytes: 11
+chars: 7
+
+Character-by-character analysis
+Character  UTF-8 bytes  Counted as
+H  1 byte   1 char
+é  2 bytes  1 char
+l  1 byte   1 char
+l  1 byte   1 char
+o  1 byte   1 char
+_  1 byte   1 char
+🌍 4 bytes  1 char
+
+************************************************************************
+
+Read line from a file without knowing the line length with "getline"
+====================================================================
+
+FILE* fp = fopen("...", "r");
+char* line = NULL;
+size_t len = 0;
+if (fp == NULL) {
+  perror("Failed to open file");
+  abort();
+}
+while (getline(&line, &len, fp) != -1) {
+  line[strcspn(line, "\n")] = '\0';
+  ...
+}
+free(line);
+fclose(fp);
+
+************************************************************************
+
+Removing trailing newline character from a string
+=================================================
+
+line[strcspn(line, "\n")] = '\0';
+
+or ...
+
+line[strcspn(line, "\r\n")] = '\0';
+
+(works for LF, CR, CRLF, LFCR, ...)
+
+************************************************************************
+
+Split a string at <TAB>
+=======================
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char** split_tabs(const char* s, size_t* count) {
+  size_t i, n = 1;
+  char** fields;
+  const char* p = s;
+  while (*p) {
+    if (*p++ == '\t')
+      n++;
+  }
+  fields = malloc(n * sizeof(*fields));
+  if (!fields)
+    return NULL;
+  const char* start = s;
+  i = 0;
+  for (p = s;; p++) {
+    if (*p == '\t' || *p == '\0') {
+      size_t len = p - start;
+      fields[i] = malloc(len + 1);
+      memcpy(fields[i], start, len);
+      fields[i][len] = '\0';
+      i++;
+      if (*p == '\0')
+        break;
+      start = p + 1;
+    }
+  }
+  *count = n;
+  return fields;
+}
+
+char* replace_char_new(const char* s, char from, char to) {
+  size_t len = strlen(s);
+  char* out = malloc(len + 1);
+  if (!out)
+    return NULL;
+  for (size_t i = 0; i < len; i++) {
+    out[i] = (s[i] == from) ? to : s[i];
+  }
+  out[len] = '\0';
+  return out;
+}
+
+int main(void) {
+  size_t n;
+  char* in = "\ta\t\tb\tc\td\te\t\t";
+  char* in2 = replace_char_new(in, '\t', '|');
+  printf("i) [%s]\n", in2);
+  free(in2);
+  char** f = split_tabs(in, &n);
+  for (size_t i = 0; i < n; i++)
+    printf("%ld) [%s]\n", i, f[i]);
+  for (size_t i = 0; i < n; i++)
+    free(f[i]);
+  free(f);
+  return 0;
+}
+
+Output:
+-------
+i) [|a||b|c|d|e||]
+0) []
+1) [a]
+2) []
+3) [b]
+4) [c]
+5) [d]
+6) [e]
+7) []
+8) []
+
+************************************************************************
+
+An alternative to "strdup"
+==========================
+
+char* my_strdup(const char* s) {
+  size_t len = strlen(s) + 1;
+  char* p = malloc(len);
+  if (p)
+    memcpy(p, s, len);
+  return p;
+}
+
+************************************************************************
+
+An alternative to "getline"
+===========================
+
+Quelle: https://solarianprogrammer.com/2019/04/03/c-programming-read-file-lines-fgets-getline-implement-portable-getline/
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int64_t my_getline(char** line, size_t* len, FILE* fp) {
+  if (line == NULL || len == NULL || fp == NULL)
+    return -1;
+  char chunk[128];
+  if (*line == NULL || *len < sizeof(chunk)) {
+    *len = sizeof(chunk);
+    if ((*line = malloc(*len)) == NULL) {
+      return -1;
+    }
+  }
+  (*line)[0] = '\0';
+  while (fgets(chunk, sizeof(chunk), fp) != NULL) {
+    size_t len_used = strlen(*line);
+    size_t chunk_used = strlen(chunk);
+    if (*len - len_used < chunk_used) {
+      if (*len > SIZE_MAX / 2) {
+        return -1;
+      } else {
+        *len *= 2;
+      }
+      if ((*line = realloc(*line, *len)) == NULL) {
+        return -1;
+      }
+    }
+    memcpy(*line + len_used, chunk, chunk_used);
+    len_used += chunk_used;
+    (*line)[len_used] = '\0';
+    if ((*line)[len_used - 1] == '\n') {
+      return len_used;
+    }
+  }
+  return -1;
+}
+
+int main(void) {
+  FILE* fp = fopen(".....", "r");
+  if (fp == NULL) {
+    perror("Unable to open file!");
+    exit(1);
+  }
+  char* line = NULL;
+  size_t len = 0;
+  size_t count = 0;
+  while (my_getline(&line, &len, fp) != -1) {
+    count++;
+    printf("%zd) line length: %zd\n", count, strlen(line));
+  }
+  printf("\n\nMax line size: %zd\n", len);
+  fclose(fp);
+  free(line);
+}
+
+************************************************************************
+
+Matrix vs. vector, and passing to funtions
+==========================================
+
+1. Passing an n×n matrix to a function
+
+void print_matrix(int n, int a[n][n])
+{
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < n; ++j)
+            printf("%d ", a[i][j]);
+}
+
+Call it like (data is a nxn long vector)):
+
+print_matrix(n, (int(*)[n])data);
+
+or (data ist a nxn sized matrix):
+
+int data[n][n];
+print_matrix(n, data);
+
+or (direct VLA pointer allocation):
+
+int (*data)[n] = malloc(sizeof *data * n);
+print_matrix(n, data);
+
+2. Why int** is usually wrong for matrices
+
+int **a;
+
+means:
+
+[ ptr | ptr | ptr ] → each ptr points to separate rows
+
+created this way:
+
+int **a = malloc(n * sizeof *a);
+for (int i = 0; i < n; i++)
+    a[i] = malloc(n * sizeof *a[i]);
+    
+Only use int** when:
+
+- Rows have different lengths
+- You need row swapping without copying
+- You need jagged arrays
+
+EXAMPLE
+-------
+
+#include <stdio.h>
+#include <stdlib.h>
+
+void print_matrix(const char* s, const int n, const int a[n][n]) {
+  puts(s);
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      printf("%5d ", a[i][j]);
+    }
+    puts("");
+  }
+  puts("");
+}
+
+void print_matrix_ptr(const char* s, const int n, int **a) {
+  puts(s);
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      printf("%5d ", a[i][j]);
+    }
+    puts("");
+  }
+  puts("");
+}
+
+void init_matrix(const int n, int a[n][n]) {
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      a[i][j] = i*3 + j + 1;
+    }
+  }
+}
+
+void init_matrix_ptr(int n, int** a)
+{
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            a[i][j] = i*3 + j + 1;
+}
+
+void init_vector(const int n, int a[n]) {
+  for (int i = 0; i < n; ++i) {
+    a[i] = i+1;
+  }
+}
+
+int main(void) { 
+  int n = 3;
+  
+  int a[n][n];
+  init_matrix(n, a);
+  print_matrix("a=", n, a);
+  
+  int b[n*n];
+  init_vector(n*n, b);
+  print_matrix("b=", n, (int(*)[n])b);
+  
+  int (*c)[n] = malloc(n * sizeof(*c));
+  init_matrix(n, c);
+  print_matrix("c=", n, c);
+  free(c);
+  
+  int** d = malloc(n * sizeof(int*));
+  for (int i=0; i<n; i++)
+    d[i] = malloc(n * sizeof(int));
+  init_matrix_ptr(n, d);
+  print_matrix_ptr("d=", n, d);
+  for (int i=0; i<n; i++)
+    free(d[i]);
+  free(d);
+  
+  return 0;
+}
+
+************************************************************************
+
+A pointer to a 2D array of int with dimensions [n][n]
+=====================================================
+
+int (*actual)[n][n] = malloc(sizeof *actual);
+
+1. What is actual?
+
+This declares actual as a pointer to a 2D array of int with dimensions [n][n].
+
+*actual has type: int[n][n]
+actual itself has type: int (*)[n][n]
+
+In other words, actual points to a contiguous n × n block of int.
+
+2. What does sizeof *actual mean?
+
+Since *actual is of type int[n][n]:
+
+sizeof *actual == sizeof(int[n][n]) == n * n * sizeof(int)
+
+So this computes exactly the number of bytes needed to store one n × n integer matrix.
+
+3. Freeing the memory
+
+Since only one allocation is used:
+
+free(actual);
+
+************************************************************************
+
+Deciphering C declarations
+==========================
+
+Source: https://cseweb.ucsd.edu/~ricko/rt_lt.rule.html
+
+See also: https://dl.acm.org/doi/pdf/10.1145/1044550.1041656 
+(PDF article: "Reading types in C using the right le walk method")
+
+The "right-left" rule is a completely regular rule for deciphering C
+declarations.  It can also be useful in creating them.
+
+First, symbols.  Read
+
+     *    as "pointer to"          - always on the left side
+     []   as "array of"            - always on the right side
+     ()   as "function returning"  - always on the right side
+
+as you encounter them in the declaration.
+
+STEP 1
+------
+Find the identifier.  This is your starting point.  Then say to yourself,
+"identifier is."  You've started your declaration.
+
+STEP 2
+------
+Look at the symbols on the right of the identifier.  If, say, you find "()"
+there, then you know that this is the declaration for a function.  So you
+would then have "identifier is function returning".  Or if you found a 
+"[]" there, you would say "identifier is array of".  Continue right until
+you run out of symbols *OR* hit a *right* parenthesis ")".  (If you hit a 
+left parenthesis, that's the beginning of a () symbol, even if there
+is stuff in between the parentheses.  More on that below.)
+
+STEP 3
+------
+Look at the symbols to the left of the identifier.  If it is not one of our
+symbols above (say, something like "int"), just say it.  Otherwise, translate
+it into English using that table above.  Keep going left until you run out of
+symbols *OR* hit a *left* parenthesis "(".  
+
+Now repeat steps 2 and 3 until you've formed your declaration.  Here are some
+examples:
+
+     int *p[];
+
+1) Find identifier.          int *p[];
+                                  ^
+   "p is"
+
+2) Move right until out of symbols or right parenthesis hit.
+                             int *p[];
+                                   ^^
+   "p is array of"
+
+3) Can't move right anymore (out of symbols), so move left and find:
+                             int *p[];
+                                 ^
+   "p is array of pointer to"
+
+4) Keep going left and find:
+                             int *p[];
+                             ^^^
+   "p is array of pointer to int". 
+   (or "p is an array where each element is of type pointer to int")
+
+Another example:
+
+   int *(*func())();
+
+1) Find the identifier.      int *(*func())();
+                                    ^^^^
+   "func is"
+
+2) Move right.               int *(*func())();
+                                        ^^
+   "func is function returning"
+
+3) Can't move right anymore because of the right parenthesis, so move left.
+                             int *(*func())();
+                                   ^
+   "func is function returning pointer to"
+
+4) Can't move left anymore because of the left parenthesis, so keep going
+   right.                    int *(*func())();
+                                           ^^
+   "func is function returning pointer to function returning"
+
+5) Can't move right anymore because we're out of symbols, so go left.
+                             int *(*func())();
+                                 ^
+   "func is function returning pointer to function returning pointer to"
+
+6) And finally, keep going left, because there's nothing left on the right.
+                             int *(*func())();
+                             ^^^
+   "func is function returning pointer to function returning pointer to int".
+
+
+As you can see, this rule can be quite useful.  You can also use it to
+sanity check yourself while you are creating declarations, and to give
+you a hint about where to put the next symbol and whether parentheses
+are required.
+
+Some declarations look much more complicated than they are due to array
+sizes and argument lists in prototype form.  If you see "[3]", that's
+read as "array (size 3) of...".  If you see "(char *,int)" that's read
+as "function expecting (char *,int) and returning...".  Here's a fun
+one:
+
+                 int (*(*fun_one)(char *,double))[9][20];
+
+I won't go through each of the steps to decipher this one.
+
+Ok.  It's:
+
+     "fun_one is pointer to function expecting (char *,double) and 
+      returning pointer to array (size 9) of array (size 20) of int."
+
+As you can see, it's not as complicated if you get rid of the array sizes
+and argument lists:
+
+     int (*(*fun_one)())[][];
+
+You can decipher it that way, and then put in the array sizes and argument
+lists later.
+
+Some final words:
+
+It is quite possible to make illegal declarations using this rule,
+so some knowledge of what's legal in C is necessary.  For instance,
+if the above had been:
+
+     int *((*fun_one)())[][];
+
+it would have been "fun_one is pointer to function returning array of array of
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^
+pointer to int".  Since a function cannot return an array, but only a 
+pointer to an array, that declaration is illegal.
+
+
+Illegal combinations include:
+
+   []() - cannot have an array of functions
+   ()() - cannot have a function that returns a function
+   ()[] - cannot have a function that returns an array
+
+In all the above cases, you would need a set of parens to bind a *
+symbol on the left between these () and [] right-side symbols in order
+for the declaration to be legal.
+
+Here are some legal and illegal examples:
+
+int i;                  an int
+int *p;                 an int pointer (ptr to an int)
+int a[];                an array of ints
+int f();                a function returning an int
+int **pp;               a pointer to an int pointer (ptr to a ptr to an int)
+int (*pa)[];            a pointer to an array of ints
+int (*pf)();            a pointer to a function returning an int
+int *ap[];              an array of int pointers (array of ptrs to ints)
+int aa[][];             an array of arrays of ints
+int af[]();             an array of functions returning an int (ILLEGAL)
+int *fp();              a function returning an int pointer
+int fa()[];             a function returning an array of ints (ILLEGAL)
+int ff()();             a function returning a function returning an int
+                                (ILLEGAL)
+int ***ppp;             a pointer to a pointer to an int pointer
+int (**ppa)[];          a pointer to a pointer to an array of ints
+int (**ppf)();          a pointer to a pointer to a function returning an int
+int *(*pap)[];          a pointer to an array of int pointers
+int (*paa)[][];         a pointer to an array of arrays of ints
+int (*paf)[]();         a pointer to a an array of functions returning an int
+                                (ILLEGAL)
+int *(*pfp)();          a pointer to a function returning an int pointer
+int (*pfa)()[];         a pointer to a function returning an array of ints
+                                (ILLEGAL)
+int (*pff)()();         a pointer to a function returning a function
+                                returning an int (ILLEGAL)
+int **app[];            an array of pointers to int pointers
+int (*apa[])[];         an array of pointers to arrays of ints
+int (*apf[])();         an array of pointers to functions returning an int
+int *aap[][];           an array of arrays of int pointers
+int aaa[][][];          an array of arrays of arrays of ints
+int aaf[][]();          an array of arrays of functions returning an int
+                                (ILLEGAL)
+int *afp[]();           an array of functions returning int pointers (ILLEGAL)
+int afa[]()[];          an array of functions returning an array of ints
+                                (ILLEGAL)
+int aff[]()();          an array of functions returning functions
+                                returning an int (ILLEGAL)
+int **fpp();            a function returning a pointer to an int pointer
+int (*fpa())[];         a function returning a pointer to an array of ints
+int (*fpf())();         a function returning a pointer to a function
+                                returning an int
+int *fap()[];           a function returning an array of int pointers (ILLEGAL)
+int faa()[][];          a function returning an array of arrays of ints
+                                (ILLEGAL)
+int faf()[]();          a function returning an array of functions
+                                returning an int (ILLEGAL)
+int *ffp()();           a function returning a function
+                                returning an int pointer (ILLEGAL)
+
+************************************************************************
+
+...
