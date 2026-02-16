@@ -387,7 +387,8 @@ char* my_strdup(const char* s) {
 An alternative to "getline"
 ===========================
 
-Quelle: https://solarianprogrammer.com/2019/04/03/c-programming-read-file-lines-fgets-getline-implement-portable-getline/
+Source:
+https://solarianprogrammer.com/2019/04/03/c-programming-read-file-lines-fgets-getline-implement-portable-getline/
 
 #include <stdint.h>
 #include <stdio.h>
