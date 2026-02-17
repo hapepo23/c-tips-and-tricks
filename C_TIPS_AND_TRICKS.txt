@@ -1,6 +1,7 @@
                       ,=================,
                       | C TIPS & TRICKS |
                       '================='
+                      Version: 2026-02-17
 
 ************************************************************************
 
@@ -21,6 +22,7 @@ An alternative to "getline"
 Matrix vs. vector, and passing to funtions
 A pointer to a 2D array of int with dimensions [n][n]
 Deciphering C declarations
+Const data, const pointers, and pointers to const data
 
 ************************************************************************
 
@@ -610,7 +612,7 @@ Deciphering C declarations
 Source: https://cseweb.ucsd.edu/~ricko/rt_lt.rule.html
 
 See also: https://dl.acm.org/doi/pdf/10.1145/1044550.1041656 
-(PDF article: "Reading types in C using the right le walk method")
+(PDF article: "Reading types in C using the right left walk method")
 
 The "right-left" rule is a completely regular rule for deciphering C
 declarations.  It can also be useful in creating them.
@@ -806,6 +808,86 @@ int faf()[]();          a function returning an array of functions
                                 returning an int (ILLEGAL)
 int *ffp()();           a function returning a function
                                 returning an int pointer (ILLEGAL)
+
+************************************************************************
+
+Const data, const pointers, and pointers to const data
+======================================================
+
+1) const variables (basic case)
+
+const int x = 10;
+x = 20;   // ❌ ERROR
+
+Here x is read-only.
+You cannot modify it after initialization.
+
+Same as:
+int const x = 10;
+These two are identical.
+
+2) Pointers and const: The Core Rule
+
+Read the declaration from right to left.
+const applies to what is immediately on its left. If nothing is on its left, it applies to what is on its right.
+
+3) Pointer to const (data is const)
+
+const int *p;
+
+or equivalently:
+
+int const *p;
+
+Meaning: p is a pointer to a const int
+So: You can change the pointer. You cannot change the data.
+
+int a = 10;
+int b = 20;
+
+const int *p = &a;
+
+*p = 15;   // ❌ ERROR (data is const)
+p = &b;    // ✅ OK    (pointer can change)
+
+4) Const pointer (pointer itself is const)
+
+int * const p = &a;
+
+Meaning: p is a const pointer to int
+
+So: You cannot change the pointer. You can change the data.
+
+int a = 10;
+int b = 20;
+
+int * const p = &a;
+
+*p = 15;   // ✅ OK
+p = &b;    // ❌ ERROR (pointer is const)
+
+5) Const pointer to const data (both const)
+
+const int * const p = &a;
+
+Meaning: p is a const pointer to const int
+So: You cannot change the pointer. You cannot change the data.
+
+int a = 10;
+int b = 20;
+
+const int * const p = &a;
+
+*p = 15;   // ❌ ERROR
+p = &b;    // ❌ ERROR
+
+6) Summary Table
+
+Declaration	          Can change pointer?	         Can change data?
+int *p                      ✅ Yes                     ✅ Yes
+const int *p                ✅ Yes                     ❌ No
+int * const p               ❌ No                      ✅ Yes
+const int * const p         ❌ No                      ❌ No
 
 ************************************************************************
 
