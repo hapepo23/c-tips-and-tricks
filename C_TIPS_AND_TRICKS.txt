@@ -1,7 +1,7 @@
                       ,=================,
                       | C TIPS & TRICKS |
                       '================='
-                      Version: 2026-02-17
+                      Version: 2026-02-18
 
 ************************************************************************
 
@@ -23,6 +23,7 @@ Matrix vs. vector, and passing to funtions
 A pointer to a 2D array of int with dimensions [n][n]
 Deciphering C declarations
 Const data, const pointers, and pointers to const data
+General In-Place Substring Replace in C
 
 ************************************************************************
 
@@ -888,6 +889,72 @@ int *p                      ✅ Yes                     ✅ Yes
 const int *p                ✅ Yes                     ❌ No
 int * const p               ❌ No                      ✅ Yes
 const int * const p         ❌ No                      ❌ No
+
+************************************************************************
+
+General In-Place Substring Replace in C
+=======================================
+
+To do: replace in "str" the first substring "old" with "new". 
+String "str" must be long enough, if "new" is longer than "old"!
+
+#include <string.h>
+
+void replace_substring (char *str, const char *old, const char *new) {
+  size_t oldlen = strlen(old);
+  size_t newlen = strlen(new);
+  char *p = strstr(str, old);
+  if (!p) return;
+  if (oldlen != newlen)
+    memmove(p + newlen,
+            p + oldlen,
+            strlen(p + oldlen) + 1);
+  memcpy(p, new, newlen);
+}
+
+To replace all occurrences:
+
+#include <string.h>
+
+void replace_substring_all (char *str, const char *old, const char *new) {
+  size_t oldlen = strlen(old);
+  size_t newlen = strlen(new);
+  char *p;
+  while ((p = strstr(str, old))) {
+    if (oldlen != newlen)
+      memmove(p + newlen,
+              p + oldlen,
+              strlen(p + oldlen) + 1);
+    memcpy(p, new, newlen);
+    str = p + newlen;
+  }
+}
+
+Test:
+
+#include <stdio.h>
+
+int main(void)
+{
+  char buf[64] = "1234abc567abc89 0";
+  printf("%s\n", buf);
+  replace_substring(buf, "abc", " ");
+  printf("%s\n", buf);
+  replace_substring(buf, "23", "222");
+  printf("%s\n", buf);
+  replace_substring_all(buf, " ", "xxyy");
+  printf("%s\n", buf);
+  replace_substring_all(buf, "yy", "%");
+  printf("%s\n", buf);
+}
+
+Result:
+
+1234abc567abc89 0
+1234 567abc89 0
+12224 567abc89 0
+12224xxyy567abc89xxyy0
+12224xx%567abc89xx%0
 
 ************************************************************************
 
