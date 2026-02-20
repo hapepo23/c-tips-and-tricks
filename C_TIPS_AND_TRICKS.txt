@@ -1,14 +1,16 @@
                       ,=================,
                       | C TIPS & TRICKS |
                       '================='
-                      Version: 2026-02-18
+               ... plus some bash, make, git stuff
+                      Version: 2026-02-20
 
 ************************************************************************
 
-Topics
-======
+Topics (Table of contents)
+==========================
 
 Reformat, compile, and run a single "main.c" with valgrind
+Correct way to fix .gitignore mistakes
 Down looping until zero with size_t
 Parsing a double in a string
 Search for a character ch in a string and remove all or only the first
@@ -41,6 +43,22 @@ valgrind --leak-check=full --show-error-list=yes ./main
 echo ..........................
 echo waiting
 read X
+
+************************************************************************
+
+Correct way to fix .gitignore mistakes
+======================================
+
+1. Correct .gitignore 
+
+2. Remove it from git tracking (but not from disk)
+git rm --cached -r <file_or_folder>
+
+3. Commit the fix
+git commit -a -m "Fix .gitignore and remove tracked files"
+
+4. Push
+git push origin master
 
 ************************************************************************
 
