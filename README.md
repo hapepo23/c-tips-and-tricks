@@ -12,5 +12,6 @@ You'll find here ...
 # C++ Topics
 
 - [Ways to iterate through a Vector in C++](https://github.com/hapepo23/c-tips-and-tricks/blob/master/Ways%20to%20iterate%20through%20a%20Vector%20in%20C%2B%2B.md)
+- [String and Vector Comparison C vs. C++ (in German)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/String%20and%20Vector%20Comparison%20C%20vs.%20C%2B%2B%20(in%20German).md)
 
 -----
