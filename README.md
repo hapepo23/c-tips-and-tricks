@@ -1,8 +1,10 @@
 # C Tips & Tricks
 
-![C](C.png)
+![C](C.png) ![C++](C++.png) ![Pascal](PAS.png)
 
-You'll find here ...
+-----
+
+# You'll find here ...
 
 - [C TIPS & TRICKS](https://github.com/hapepo23/c-tips-and-tricks/blob/master/C_TIPS_AND_TRICKS.txt)
 - [Reading Types in C Using the Right Left Walk Method](https://github.com/hapepo23/c-tips-and-tricks/blob/master/Reading_Types_in_C_Using_the_Right_Left_Walk_Method.pdf)
@@ -14,11 +16,14 @@ You'll find here ...
 
 - [Ways to iterate through a Vector in C++](https://github.com/hapepo23/c-tips-and-tricks/blob/master/Ways%20to%20iterate%20through%20a%20Vector%20in%20C%2B%2B.md)
 - [String and Vector Comparison C vs. C++ (in German)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/String%20and%20Vector%20Comparison%20C%20vs.%20C%2B%2B%20(in%20German).md)
+- [Wikipedia: C++ Standard Library](https://en.wikipedia.org/wiki/C%2B%2B_Standard_Library)
 
 -----
 
 # C, C++, and Pascal
 
 - [A Comparison of the Syntax of C/C++ and Pascal](https://github.com/hapepo23/c-tips-and-tricks/blob/master/A_Comparison_of_the_Syntax_of_C_C%2B%2B_and_Pascal.txt)
+- [Wikipedia: Comparison of Pascal and C](https://en.wikipedia.org/wiki/Comparison_of_Pascal_and_C)
+- [Brian W. Kernighan: Why Pascal is Not My Favorite Programming Language (1981)]()
 
 -----
