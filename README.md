@@ -17,6 +17,8 @@
 - [Ways to iterate through a Vector in C++](https://github.com/hapepo23/c-tips-and-tricks/blob/master/Ways%20to%20iterate%20through%20a%20Vector%20in%20C%2B%2B.md)
 - [String and Vector Comparison C vs. C++ (in German)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/String%20and%20Vector%20Comparison%20C%20vs.%20C%2B%2B%20(in%20German).md)
 - [Wikipedia: C++ Standard Library](https://en.wikipedia.org/wiki/C%2B%2B_Standard_Library)
+- [Linus Torvalds’ Critique of C++: A
+Comprehensive Review](https://github.com/hapepo23/c-tips-and-tricks/blob/master/Linus_Torvalds_Critique_of_C%2B%2B_A_Comprehensive_Review.pdf)
 
 -----
 
