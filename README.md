@@ -16,3 +16,9 @@ You'll find here ...
 - [String and Vector Comparison C vs. C++ (in German)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/String%20and%20Vector%20Comparison%20C%20vs.%20C%2B%2B%20(in%20German).md)
 
 -----
+
+# C, C++, and Pascal
+
+- [A Comparison of the Syntax of C/C++ and Pascal](https://github.com/hapepo23/c-tips-and-tricks/blob/master/A_Comparison_of_the_Syntax_of_C_C%2B%2B_and_Pascal.txt)
+
+-----
