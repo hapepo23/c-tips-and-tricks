@@ -2,16 +2,16 @@ program pascal_peculiarities_and_pitfalls;
 
 {
   Pascal peculiarities and pitfalls:
-  1. arrays as parameter to functions/procedures
-  2. constants starting with a decimal point are nor allowed
-  3. parantheses always needed when using and/or
-  4. no ";" before else
+  1. Array declarations in function/procedure parameter lists are often not allowed
+  2. Floating Point Constants starting with a decimal point are not allowed
+  3. Parantheses always needed when using AND/OR
+  4. No ";" before ELSE
 }
 
 type
   Tarr = array [1..2] of integer;
 
-{ procedure test(x: array [1..2] of integer); // not allowed, must use Tarr }
+{ procedure test1(x: array [1..2] of integer); // not allowed, must use Tarr }
   procedure test1(x: Tarr);
   begin
     writeln(Low(x));
@@ -39,7 +39,7 @@ begin
 
   writeln(x);
 
-{ if x >= 1000 and x <= 4000 then  // Error: Incompatible types }
+{ if  x >= 1000  and  x <= 4000  then  // Error: Incompatible types }
   if (x >= 1000) and (x <= 4000) then
 
   { writeln('x is between 1000 and 4000'); // Error: Syntax error: ; before else }
