@@ -22,10 +22,14 @@ Comprehensive Review](https://github.com/hapepo23/c-tips-and-tricks/blob/master/
 
 -----
 
-# C, C++, and Pascal
+# Comparing C, C++, and Pascal
 
 - [A Comparison of the Syntax of C/C++ and Pascal](https://github.com/hapepo23/c-tips-and-tricks/blob/master/A_Comparison_of_the_Syntax_of_C_C%2B%2B_and_Pascal.txt)
 - [Wikipedia: Comparison of Pascal and C](https://en.wikipedia.org/wiki/Comparison_of_Pascal_and_C)
-- [Brian W. Kernighan: Why Pascal is Not My Favorite Programming Language (1981)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/why_pascal_is_not_my_favorite_language.pdf)
 
 -----
+
+# Pascal
+
+- [Pascal Peculiarities and  Pitfalls](https://github.com/hapepo23/c-tips-and-tricks/blob/master/pascal_peculiarities_and_pitfalls.pas)
+- [Brian W. Kernighan: Why Pascal is Not My Favorite Programming Language (1981)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/why_pascal_is_not_my_favorite_language.pdf)
