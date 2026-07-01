@@ -38,7 +38,7 @@ Comprehensive Review](https://github.com/hapepo23/c-tips-and-tricks/blob/master/
 
 # VIM
 
-- [VIM](https://github.com/hapepo23/c-tips-and-tricks/blob/master/vim.md)
+- [VIM Überblick (in German)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/vim.md)
 
 -----
 

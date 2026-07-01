@@ -1,4 +1,4 @@
-# VIM (vi improved)
+# VIM Überblick
 
 ### Hier ist eine Übersicht wichtiger Vim-Kommandos, die in den Eingabemodus (Insert Mode) wechseln und anschließend mit Esc beendet werden:
 
@@ -297,6 +297,7 @@
 | Kommando                | Wirkung                             |
 | ----------------------- | ----------------------------------- |
 | `vim a.txt b.txt c.txt` | Mehrere Dateien öffnen              |
+| `vim -p a.txt b.txt c.txt` | Mehrere Dateien in Tabs öffnen              |
 | `:n`                    | Zur nächsten Datei wechseln         |
 | `:vs test.c`            | `test.c` im vertikalen Split öffnen |
 | `Ctrl+w l`              | In das rechte Fenster wechseln      |
