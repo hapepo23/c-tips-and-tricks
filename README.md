@@ -33,3 +33,12 @@ Comprehensive Review](https://github.com/hapepo23/c-tips-and-tricks/blob/master/
 
 - [Pascal Peculiarities and  Pitfalls](https://github.com/hapepo23/c-tips-and-tricks/blob/master/pascal_peculiarities_and_pitfalls.pas)
 - [Brian W. Kernighan: Why Pascal is Not My Favorite Programming Language (1981)](https://github.com/hapepo23/c-tips-and-tricks/blob/master/why_pascal_is_not_my_favorite_language.pdf)
+
+-----
+
+# VIM
+
+- [VIM](https://github.com/hapepo23/c-tips-and-tricks/blob/master/vim.md)
+
+-----
+
