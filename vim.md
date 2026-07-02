@@ -143,7 +143,6 @@
 | `?Muster`     | Rückwärts nach einem Muster suchen                        |
 | `n`           | Zum nächsten Suchtreffer                                  |
 | `N`           | Zum vorherigen Suchtreffer                                |
-| ` ` ``        | Zur vorherigen Cursorposition springen                    |
 | `'`           | Zum Anfang der vorherigen Zeile springen                  |
 | `m{a-z}`      | Eine Markierung setzen                                    |
 | `` `{a-z}` `` | Exakt zur Markierung springen                             |
@@ -297,7 +296,7 @@
 | Kommando                | Wirkung                             |
 | ----------------------- | ----------------------------------- |
 | `vim a.txt b.txt c.txt` | Mehrere Dateien öffnen              |
-| `vim -p a.txt b.txt c.txt` | Mehrere Dateien in Tabs öffnen              |
+| `vim -p a.txt b.txt`    | Mehrere Dateien in Tabs öffnen      |
 | `:n`                    | Zur nächsten Datei wechseln         |
 | `:vs test.c`            | `test.c` im vertikalen Split öffnen |
 | `Ctrl+w l`              | In das rechte Fenster wechseln      |
