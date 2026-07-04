@@ -53,3 +53,6 @@ set hlsearch
 
 "Switch away from a modified buffer without saving it first.
 set hidden
+
+"Use the system clipboard as the default register for copying, pasting, and deleting.
+set clipboard=unnamedplus
