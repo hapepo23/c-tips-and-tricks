@@ -56,3 +56,27 @@ set hidden
 
 "Use the system clipboard as the default register for copying, pasting, and deleting.
 set clipboard=unnamedplus
+
+"junegunn/vim-plug automatic install (before plug#begin() call) 
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+"Plugin section
+call plug#begin()
+
+"List your plugins here
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
+Plug 'prabirshrestha/asyncomplete.vim'
+Plug 'prabirshrestha/asyncomplete-lsp.vim'
+
+"Plugin section end
+call plug#end()
+
+"Manual completion key = Alt+y 
+inoremap <M-y> <Plug>(asyncomplete_force_refresh)
+
+set omnifunc=lsp#complete
